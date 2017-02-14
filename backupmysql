@@ -1,0 +1,43 @@
+##!/bin/sh
+
+BACKUPDIR=/var/backupDB
+ROTATE=3
+USER=root
+PASSWORD=MTCmySQLMobile
+HOST=localhost
+DATABASE=mobilesales
+
+mkdir -p $BACKUPDIR
+
+# read in a hostname from the command line if it exists
+if [ "$1" != "" ]
+then
+    HOST=$1
+fi
+
+LOG="$BACKUPDIR/mysql-$DATABASE.`date +%y%m%d`.log"
+STALELOG="$BACKUPDIR/mysql-$DATABASE.`date +%y%m%d --date="$ROTATE days ago"`.log"
+
+echo -n `date -R` >> $LOG
+echo " MySQL backup procedure for $DATABASE starting" >> $LOG
+
+CURRENT="$BACKUPDIR/$DATABASE.`date +%y%m%d`.mysql"
+echo "Creating current backup file $CURRENT" >> $LOG
+
+# run the backup and compress it
+/usr/bin/mysqldump -u $USER -p$PASSWORD --default-character-set=utf8 $DATABASE > $CURRENT
+gzip $CURRENT
+
+# retain monthly copy on 15th; delete state logs
+if [ "`date +%d`" != "15" ]
+then
+    STALE="$BACKUPDIR/$DATABASE.`date +%y%m%d --date="$ROTATE days ago"`.*"
+    echo "Deleting stale backup files $STALE" >> $LOG
+    rm -f $STALE
+    rm -f $STALELOG
+fi
+
+chmod 0600 $BACKUPDIR/*
+
+echo -n `date -R` >> $LOG
+echo " MySQL backup procedure for $DATABASE completed" >> $LOG
