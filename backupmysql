@@ -2,10 +2,10 @@
 
 BACKUPDIR=/var/backupDB
 ROTATE=3
-USER=root
-PASSWORD=MTCmySQLMobile
+USER=userdb
+PASSWORD=passworddb
 HOST=localhost
-DATABASE=mobilesales
+DATABASE=namadb
 
 mkdir -p $BACKUPDIR
 
